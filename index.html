@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Cálculo Média Curso</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="miguelgazela" />
+    <meta name="description" content="Calculador Média Curso Superior" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" />
+</head>
+
+<body onload="loadPage()">
+	<div class="container">
+		<div class="hero-unit">
+			<h1>Média de curso: <span id="grade" class="green">0.0</span> valores</h1>
+			<p>Cadeiras que ainda não foram concluídas (nota negativa) não são contabilizadas para a média.</p>
+			<!-- <button class="btn btn-small btn-primary" type="button"><i class="icon-circle-arrow-down icon-white"></i> Importar dados</button> -->
+		</div>
+
+		<form class="form-horizontal">
+		  <div class="control-group">
+		    <label class="control-label" for="inputClassName">Nome da cadeira *</label>
+		    <div class="controls">
+		      <input type="text" id="inputClassName" placeholder="Nome da Cadeira">
+		      <span class="help-inline"></span>
+		    </div>
+		  </div>
+		  <div class="control-group">
+		    <label class="control-label" for="inputGrade">Classificação *</label>
+		    <div class="controls">
+		      <input type="number" id="inputGrade" placeholder="Classificação" min="0" max="20" step="1">
+		      <span class="help-inline"></span>
+		    </div>
+		  </div>
+		  <div class="control-group">
+		    <label class="control-label" for="inputECTS">Créditos/ECTS *</label>
+		    <div class="controls">
+		      <input type="number" id="inputECTS" placeholder="Créditos/ECTS" min="1" step="0.5" max="30">
+		      <span class="help-inline"></span>
+		    </div>
+		  </div>
+		  <div class="control-group">
+		    <div class="controls">
+		      <button type="button" class="btn btn-success btn-small" onClick="return addGrade()">Adicionar</button>
+		    </div>
+		  </div>
+		</form>
+		<!-- Modal -->
+		<div id="saveDataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="saveData" aria-hidden="true">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times</button>
+		    <h3 id="myModalLabel">Aviso!</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>Os dados serão guardados localmente no browser deste dispositivo.</p>
+		    <p>Prime 'Cancelar' se estiveres a utilizar um dispositivo público ou partilhado.</p>
+		    <!-- <p>Caso não os pretendas guardar neste dispositivo utiliza a função de exportar.</p> -->
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+		    <button class="btn btn-primary" onClick="return saveData()">Guardar</button>
+		  </div>
+		</div>
+	</div>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script type="text/javascript" src="js/scripts.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/modernizr.js"></script>
+</body>
+</html>
