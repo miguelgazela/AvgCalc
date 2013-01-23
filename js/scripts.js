@@ -67,7 +67,7 @@ function addGrade() {
 		$('#inputGrade').val('');
 		$('#inputECTS').val('');
 		data['numEntries']++;
-		data['entries'].push({Nome:className, Classificação:classGrade, Créditos:classECTS});
+		data['entries'].push({nome:className, classificacao:classGrade, creditos:classECTS});
 		updateFinalGrade(parseInt(classGrade), parseInt(classECTS));
 		if( LS_available && $('#saveData').length == 0) {
 			//$('.hero-unit').append('<button class="btn btn-small btn-primary" type="button"><i class="icon-circle-arrow-up icon-white"></i> Exportar dados</button>');
@@ -102,9 +102,16 @@ function saveData() {
 
 function loadData() {
 	if(localStorage['hasDataSaved'] == "true") {
-		//alert("tem dados guardados");
-		console.log("tem dados guardados");
-		console.log(localStorage['numEntries']);
+		data['numEntries'] = localStorage['numEntries'];
+		$('.container').append('<table class="table table-hover table-condensed"></table>');
+		$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
+		for(var i = 0; i < data['numEntries']; i++) {
+			data['entries'].push(JSON.parse(localStorage[i]));
+			var classGrade = data['entries'][i].classificacao;
+			classGrade < 10 ? grade = $('<span class="label label-important">'+classGrade+'</span>') : grade = $('<span class="label label-success">'+classGrade+'</span>');
+			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+data['entries'][i].nome+'</td><td></td><td>'+data['entries'][i].creditos+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
+			$('tr:last > td:nth-child(3)').append(grade);
+		}
 	}
 }
 
