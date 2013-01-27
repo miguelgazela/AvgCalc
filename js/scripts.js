@@ -9,12 +9,9 @@ $(document).ready(function(){
 	Modernizr.localstorage ? LS_available = true : LS_available = false;
 	if(LS_available) {
 		loadData();
+		$('.nav').append('<li><a href="#" onClick="return showDeleteAllDataAlert()"><i class="icon-trash icon-white"></i> Eliminar dados guardados</a></li>');
 	}
 });
-
-function loadPage() {
-	// checks if local storage is available and if it has previous saved info
-}
 
 function addGrade() {
 	var errorOcurred = false;
@@ -56,7 +53,7 @@ function addGrade() {
 			grade = $('<span class="label label-success">'+classGrade+'</span>');
 		}
 		if($('table').length == 0) {
-			$('.container').append('<table class="table table-hover table-condensed"></table>');
+			$('.container:last').append('<table class="table table-hover table-condensed"></table>');
 			$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
 			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
 			$('tr:last > td:nth-child(3)').append(grade);
@@ -72,7 +69,7 @@ function addGrade() {
 		updateFinalGrade(parseInt(classGrade), parseInt(classECTS));
 		if( LS_available && $('#saveData').length == 0) {
 			//$('.hero-unit').append('<button class="btn btn-small btn-primary" type="button"><i class="icon-circle-arrow-up icon-white"></i> Exportar dados</button>');
-			$('.hero-unit').append('<button type="button" id="saveData" class="btn btn-small btn-primary" data-toggle="modal" data-target="#saveDataModal"><i class="icon-hdd icon-white"></i> Guardar dados</button>');
+			$('.nav').append('<li><a id="saveData" href="#saveDataModal" data-toggle="modal"><i class="icon-hdd icon-white"></i> Guardar dados</a></li>');
 		}
 	}
 }
@@ -96,15 +93,18 @@ function saveData() {
 	localStorage['numEntries'] = data['numEntries'];
 	for(var i = 0; i < data['numEntries']; i++) {
 		localStorage[i] = JSON.stringify(data['entries'][i]);
-		//console.log(JSON.parse(localStorage[i]));
+		$('#saveData').remove();
 	}
 	$('#saveDataModal').modal('hide');
 }
 
 function loadData() {
+	console.log("aqui");
 	if(localStorage['hasDataSaved'] == "true") {
+		console.log("aqui2");
 		data['numEntries'] = localStorage['numEntries'];
-		$('.container').append('<table class="table table-hover table-condensed"></table>');
+		console.log(data['numEntries']);
+		$('body > .container').append('<table class="table table-hover table-condensed"></table>');
 		$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
 		for(var i = 0; i < data['numEntries']; i++) {
 			data['entries'].push(JSON.parse(localStorage[i]));
@@ -114,6 +114,19 @@ function loadData() {
 			$('tr:last > td:nth-child(3)').append(grade);
 		}
 	}
+}
+
+function showDeleteAllDataAlert() {
+	//$('.hero-unit').before('<div class="alert alert-block alert-error fade in"><button type="button" class="close" data-dismiss="alert">&times</button><h4 class="alert-heading">Aviso!</h4><p>Esta operação é irreversível.</p><p><a class="btn btn-danger" href="#"><i class="icon-white icon-trash"></i> Apagar</a> <a class="btn" href="#">Or do this</a></p></div>')
+	$('.hero-unit').before('<div class="alert alert-block alert-error fade in"></div>');
+	$('.alert-error').append('<button type="button" class="close" data-dismiss="alert">&times</button>');
+	$('.alert-error').append('<h4 class="alert-heading">Aviso!</h4>');
+	$('.alert-error').append('<p>Esta operação é irreversível.</p>');
+	$('.alert-error').append('<p><a class="btn btn-danger" href="#"><i class="icon-white icon-trash"></i> Apagar</a> <a class="btn" href="#">Cancelar</a></p>');
+}
+
+function deleteAllData() {
+
 }
 
 function removeEntry(element) {
