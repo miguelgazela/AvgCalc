@@ -1,4 +1,3 @@
-// testing github on ubuntu
 $(document).ready(function(){
 	data = new Object;
 	data['numEntries'] = 0;
@@ -9,7 +8,7 @@ $(document).ready(function(){
 	Modernizr.localstorage ? LS_available = true : LS_available = false;
 	if(LS_available) {
 		loadData();
-		$('.nav').append('<li><a href="#" onClick="return showDeleteAllDataAlert()"><i class="icon-trash icon-white"></i> Eliminar dados guardados</a></li>');
+		$('.nav').append('<li><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="WOW"><i class="icon-trash icon-white"></i> Eliminar dados guardados</a></li>');
 	}
 });
 
@@ -68,7 +67,6 @@ function addGrade() {
 		data['entries'].push({nome:className, classificacao:classGrade, creditos:classECTS});
 		updateFinalGrade(parseInt(classGrade), parseInt(classECTS));
 		if( LS_available && $('#saveData').length == 0) {
-			//$('.hero-unit').append('<button class="btn btn-small btn-primary" type="button"><i class="icon-circle-arrow-up icon-white"></i> Exportar dados</button>');
 			$('.nav').append('<li><a id="saveData" href="#saveDataModal" data-toggle="modal"><i class="icon-hdd icon-white"></i> Guardar dados</a></li>');
 		}
 	}
@@ -99,11 +97,9 @@ function saveData() {
 }
 
 function loadData() {
-	console.log("aqui");
 	if(localStorage['hasDataSaved'] == "true") {
-		console.log("aqui2");
 		data['numEntries'] = localStorage['numEntries'];
-		console.log(data['numEntries']);
+		//console.log(data['numEntries']);
 		$('body > .container').append('<table class="table table-hover table-condensed"></table>');
 		$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
 		for(var i = 0; i < data['numEntries']; i++) {
@@ -117,16 +113,15 @@ function loadData() {
 }
 
 function showDeleteAllDataAlert() {
-	//$('.hero-unit').before('<div class="alert alert-block alert-error fade in"><button type="button" class="close" data-dismiss="alert">&times</button><h4 class="alert-heading">Aviso!</h4><p>Esta operação é irreversível.</p><p><a class="btn btn-danger" href="#"><i class="icon-white icon-trash"></i> Apagar</a> <a class="btn" href="#">Or do this</a></p></div>')
 	$('.hero-unit').before('<div class="alert alert-block alert-error fade in"></div>');
 	$('.alert-error').append('<button type="button" class="close" data-dismiss="alert">&times</button>');
 	$('.alert-error').append('<h4 class="alert-heading">Aviso!</h4>');
 	$('.alert-error').append('<p>Esta operação é irreversível.</p>');
-	$('.alert-error').append('<p><a class="btn btn-danger" href="#"><i class="icon-white icon-trash"></i> Apagar</a> <a class="btn" href="#">Cancelar</a></p>');
+	$('.alert-error').append('<p><a class="btn btn-danger" href="#"><i class="icon-white icon-trash" onClick="return deleteAllData()"></i> Apagar</a> <a class="btn" href="#">Cancelar</a></p>');
 }
 
 function deleteAllData() {
-
+	localStorage.clear();
 }
 
 function removeEntry(element) {
