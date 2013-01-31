@@ -1,15 +1,44 @@
 $(document).ready(function(){
-	data = new Object;
-	data['numEntries'] = 0;
-	data['entries'] = [];
-	avg = 0;
-	sumCreditsCompleted = 0;
-	sumCredits_x_Grades = 0;
-	Modernizr.localstorage ? LS_available = true : LS_available = false;
-	if(LS_available) {
-		loadData();
-		$('.nav').append('<li><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="WOW"><i class="icon-trash icon-white"></i> Eliminar dados guardados</a></li>');
-	}
+	var Grade = Backbone.Model.extend({
+		defaults: function() {
+			return {
+				name: "empty grade...",
+				classification: 0,
+				credits: 0
+			};
+		},
+		initialize: function() {
+			if(!this.get('name') {
+				this.set({name: this.default().title});
+			}
+		},
+	});
+	
+	var GradeList = Backbone.Collection.extend({
+		model: Grade,
+		localStorage = new Backbone.LocalStorage("grades-backbone"),
+		comparator: function(grade) {
+			return grade.get('classification');
+		}
+	});
+	
+	var Grades = new GradeList;
+	
+	var GradeView = Backbone.View.extend({
+		tagname: "li",
+		template: _.template($('#item-template').html()),
+		events: {
+			"click a.destroy" : "clear"
+		},
+		
+		initialize: function() {
+			this.listenTo(this.model, 'change', this.render);
+			this.listenTo(this.model, 'destroy', this.remove);
+		},
+		
+		render: function() {
+			this.$el.html(this.template(this.model.toJSON()));
+			return this;
 });
 
 function addGrade() {
