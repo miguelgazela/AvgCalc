@@ -1,14 +1,21 @@
 $(document).ready(function(){
-	data = new Object;
-	data['numEntries'] = 0;
-	data['entries'] = [];
+	//data = new Object;
+	//data['numEntries'] = 0;
+	//data['entries'] = [];
+
 	avg = 0;
 	sumCreditsCompleted = 0;
 	sumCredits_x_Grades = 0;
+	//localStorage.clear();
+	
 	Modernizr.localstorage ? LS_available = true : LS_available = false;
 	if(LS_available) {
-		loadData();
-		$('.nav').append('<li><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="WOW"><i class="icon-trash icon-white"></i> Eliminar dados guardados</a></li>');
+		if(localStorage['hasDataSaved'] == "true") {
+			loadData();
+			$('.nav').append('<li id="deleteNav"><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="WOW"><i class="icon-trash icon-white"></i> Eliminar notas</a></li>');
+		} else {
+			localStorage['entries'] = 0;
+		}
 	}
 });
 
@@ -56,6 +63,7 @@ function addGrade() {
 			$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
 			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
 			$('tr:last > td:nth-child(3)').append(grade);
+			$('.nav').append('<li id="deleteNav"><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="WOW"><i class="icon-trash icon-white"></i> Eliminar notas</a></li>');
 		} else {
 			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
 			$('tr:last > td:nth-child(3)').append(grade);
@@ -63,16 +71,14 @@ function addGrade() {
 		$('#inputClassName').val('');
 		$('#inputGrade').val('');
 		$('#inputECTS').val('');
-		data['numEntries']++;
-		data['entries'].push({nome:className, classificacao:classGrade, creditos:classECTS});
-		updateFinalGrade(parseInt(classGrade), parseInt(classECTS));
-		if( LS_available && $('#saveData').length == 0) {
-			$('.nav').append('<li><a id="saveData" href="#saveDataModal" data-toggle="modal"><i class="icon-hdd icon-white"></i> Guardar dados</a></li>');
+		if(LS_available) {
+			saveData(className,classGrade,classECTS);
 		}
+		updateAVG(parseInt(classGrade), parseInt(classECTS));
 	}
 }
 
-function updateFinalGrade(classGrade, classECTS) {
+function updateAVG(classGrade, classECTS) {
 	if(classGrade >= 10) {
 		sumCreditsCompleted +=  classECTS;
 		sumCredits_x_Grades += (classGrade * classECTS);
@@ -86,29 +92,34 @@ function updateFinalGrade(classGrade, classECTS) {
 	//$('table').before('<code>'+JSON.stringify(data)+'</code>'); //will be used for export data
 }
 
-function saveData() {
-	localStorage['hasDataSaved'] = true;
-	localStorage['numEntries'] = data['numEntries'];
-	for(var i = 0; i < data['numEntries']; i++) {
-		localStorage[i] = JSON.stringify(data['entries'][i]);
-		$('#saveData').remove();
+function saveData(className,classGrade,classECTS) {
+	var entries = parseInt(localStorage['entries']);
+	if(entries == 0) {
+		localStorage['hasDataSaved'] = true;
 	}
-	$('#saveDataModal').modal('hide');
+	var entry = {name: className,grade: classGrade,ects: classECTS};
+	localStorage[entries] = JSON.stringify(entry);
+	entries += 1;
+	localStorage['entries'] = entries;
 }
 
 function loadData() {
-	if(localStorage['hasDataSaved'] == "true") {
-		data['numEntries'] = localStorage['numEntries'];
-		//console.log(data['numEntries']);
-		$('body > .container').append('<table class="table table-hover table-condensed"></table>');
-		$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
-		for(var i = 0; i < data['numEntries']; i++) {
-			data['entries'].push(JSON.parse(localStorage[i]));
-			var classGrade = data['entries'][i].classificacao;
-			classGrade < 10 ? grade = $('<span class="label label-important">'+classGrade+'</span>') : grade = $('<span class="label label-success">'+classGrade+'</span>');
-			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+data['entries'][i].nome+'</td><td></td><td>'+data['entries'][i].creditos+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
-			$('tr:last > td:nth-child(3)').append(grade);
+	var entries = localStorage['entries'];
+	console.log(entries);
+	$('body > .container').append('<table class="table table-hover table-condensed"></table>');
+	$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>');
+	for(var i = 0; i < entries; i++) {
+		var entry = JSON.parse(localStorage[i]);
+		console.log(entry);
+		var classGrade = entry.grade;
+		if(classGrade < 10) {
+			gradeLabel = $('<span class="label label-important">'+classGrade+'</span>');
+		} else {
+			gradeLabel = $('<span class="label label-success">'+classGrade+'</span>');
+			updateAVG(parseInt(classGrade),parseInt(entry.ects));
 		}
+		$('table').append('<tr><td>'+$('tr').length+'</td><td>'+entry.name+'</td><td></td><td>'+entry.ects+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
+		$('tr:last > td:nth-child(3)').append(gradeLabel);
 	}
 }
 
@@ -117,10 +128,21 @@ function showDeleteAllDataAlert() {
 	$('.alert-error').append('<button type="button" class="close" data-dismiss="alert">&times</button>');
 	$('.alert-error').append('<h4 class="alert-heading">Aviso!</h4>');
 	$('.alert-error').append('<p>Esta operação é irreversível.</p>');
-	$('.alert-error').append('<p><a class="btn btn-danger" href="#"><i class="icon-white icon-trash" onClick="return deleteAllData()"></i> Apagar</a> <a class="btn" href="#">Cancelar</a></p>');
+	$('.alert-error').append('<p><a class="btn btn-danger" href="#" onClick="return deleteAllData()"><i class="icon-white icon-trash"></i> Apagar</a> <a class="btn" href="#" onClick="return removeDeleteAllDataAlert()">Cancelar</a></p>');
+}
+
+function removeDeleteAllDataAlert() {
+	$('.alert-error').remove();
 }
 
 function deleteAllData() {
+	avg = 0;
+	sumCreditsCompleted = 0;
+	sumCredits_x_Grades = 0;
+	$('#grade').html(avg);
+	$('.alert-error').remove();
+	$('table').remove();
+	$('#deleteNav').remove();
 	localStorage.clear();
 }
 
