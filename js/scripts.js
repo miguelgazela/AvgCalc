@@ -1,12 +1,7 @@
 $(document).ready(function(){
-	//data = new Object;
-	//data['numEntries'] = 0;
-	//data['entries'] = [];
-
 	avg = 0;
 	sumCreditsCompleted = 0;
 	sumCredits_x_Grades = 0;
-	//localStorage.clear();
 	
 	Modernizr.localstorage ? LS_available = true : LS_available = false;
 	if(LS_available) {
@@ -17,6 +12,18 @@ $(document).ready(function(){
 			localStorage['entries'] = 0;
 		}
 	}
+	$("#grade").hover(
+		function () {
+			$(this).html(avg.toFixed(2));
+		},
+		function () {
+			if(avg - Math.floor(avg) >= 0.5) {
+				$(this).html(Math.ceil(avg));
+			} else {
+				$(this).html(Math.floor(avg));
+			}
+		}
+	);
 });
 
 function addGrade() {
@@ -60,13 +67,13 @@ function addGrade() {
 		}
 		if($('table').length == 0) {
 			$('.container:last').append('<table class="table table-hover table-condensed"></table>');
-			$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
-			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
-			$('tr:last > td:nth-child(3)').append(grade);
-			$('.nav').append('<li id="deleteNav"><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="WOW"><i class="icon-trash icon-white"></i> Eliminar notas</a></li>');
+			$('table').append('<tr><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>')
+			$('table').append('<tr><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
+			$('tr:last > td:nth-child(2)').append(grade);
+			$('.nav').append('<li id="deleteNav"><a href="#" onClick="return showDeleteAllDataAlert()" rel="tooltip" title="Apaga todas as notas guardadas"><i class="icon-trash icon-white"></i> Eliminar notas</a></li>');
 		} else {
-			$('table').append('<tr><td>'+$('tr').length+'</td><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
-			$('tr:last > td:nth-child(3)').append(grade);
+			$('table').append('<tr><td>'+className+'</td><td></td><td>'+classECTS+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
+			$('tr:last > td:nth-child(2)').append(grade);
 		}
 		$('#inputClassName').val('');
 		$('#inputGrade').val('');
@@ -74,20 +81,25 @@ function addGrade() {
 		if(LS_available) {
 			saveData(className,classGrade,classECTS);
 		}
-		updateAVG(parseInt(classGrade), parseInt(classECTS));
-	}
+		if(parseInt(classGrade) >= 10) {
+			updateAVG(parseInt(classGrade), parseInt(classECTS));
+		}
+	}	
 }
 
 function updateAVG(classGrade, classECTS) {
-	if(classGrade >= 10) {
-		sumCreditsCompleted +=  classECTS;
+	console.log(classGrade);
+	console.log(classECTS);
+	sumCreditsCompleted +=  classECTS;
+	if(classGrade > 0)
 		sumCredits_x_Grades += (classGrade * classECTS);
-		avg = sumCredits_x_Grades / sumCreditsCompleted;
-		if(avg - Math.floor(avg) >= 0.5) {
-			$('#grade').html(Math.ceil(avg));
-		} else {
-			$('#grade').html(Math.floor(avg));
-		}
+	else
+		sumCredits_x_Grades -= (classGrade * classECTS);
+	avg = sumCredits_x_Grades / sumCreditsCompleted;
+	if(avg - Math.floor(avg) >= 0.5) {
+		$('#grade').html(Math.ceil(avg));
+	} else {
+		$('#grade').html(Math.floor(avg));
 	}
 	//$('table').before('<code>'+JSON.stringify(data)+'</code>'); //will be used for export data
 }
@@ -99,27 +111,28 @@ function saveData(className,classGrade,classECTS) {
 	}
 	var entry = {name: className,grade: classGrade,ects: classECTS};
 	localStorage[entries] = JSON.stringify(entry);
+	$('tr:last').attr('id',entries);
 	entries += 1;
 	localStorage['entries'] = entries;
 }
 
 function loadData() {
 	var entries = localStorage['entries'];
-	console.log(entries);
 	$('body > .container').append('<table class="table table-hover table-condensed"></table>');
-	$('table').append('<tr><th>#</th><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>');
+	$('table').append('<tr><th>Cadeira</th><th>Classificação</th><th>Créditos/ECTS</th><th></th></tr>');
 	for(var i = 0; i < entries; i++) {
-		var entry = JSON.parse(localStorage[i]);
-		console.log(entry);
-		var classGrade = entry.grade;
-		if(classGrade < 10) {
-			gradeLabel = $('<span class="label label-important">'+classGrade+'</span>');
-		} else {
-			gradeLabel = $('<span class="label label-success">'+classGrade+'</span>');
-			updateAVG(parseInt(classGrade),parseInt(entry.ects));
+		if(localStorage[i]) {
+			var entry = JSON.parse(localStorage[i]);
+			var classGrade = entry.grade;
+			if(classGrade < 10) {
+				gradeLabel = $('<span class="label label-important">'+classGrade+'</span>');
+			} else {
+				gradeLabel = $('<span class="label label-success">'+classGrade+'</span>');
+				updateAVG(parseInt(classGrade),parseInt(entry.ects));
+			}
+			$('table').append('<tr><td>'+entry.name+'</td><td></td><td>'+entry.ects+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
+			$('tr:last > td:nth-child(2)').append(gradeLabel);
 		}
-		$('table').append('<tr><td>'+$('tr').length+'</td><td>'+entry.name+'</td><td></td><td>'+entry.ects+'</td><td><a href="#" onClick="return removeEntry(this)" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td></tr>');
-		$('tr:last > td:nth-child(3)').append(gradeLabel);
 	}
 }
 
@@ -136,18 +149,18 @@ function removeDeleteAllDataAlert() {
 }
 
 function deleteAllData() {
-	avg = 0;
-	sumCreditsCompleted = 0;
-	sumCredits_x_Grades = 0;
-	$('#grade').html(avg);
-	$('.alert-error').remove();
-	$('table').remove();
-	$('#deleteNav').remove();
 	localStorage.clear();
+	location.reload();
 }
 
 function removeEntry(element) {
 	var row = $(element).parents('tr');
-	console.log(row.find('td').html()); // the index 
+	var classGrade = parseInt(row.find('span').html());
+	var classCredits = parseInt(row.find('td:nth-child(3)').html());
+	if(LS_available) {
+		var id = row.attr('id');
+		localStorage.removeItem(id);
+	}
+	updateAVG(-classGrade,-classCredits);
 	$(element).parents('tr').remove();
 }
